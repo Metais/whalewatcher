@@ -20,7 +20,7 @@ WHALE_CUTOFF = 0.01
 MINIMUM_WHALE_FACTOR = 1
 
 # after how many minutes to write price interval, ranges from 5 minutes after whale event to 1 day after whale event
-time_intervals = [5, 10, 30, 60, 120, 240, 720, 1440]
+time_intervals = [1, 5, 10, 30, 60, 120, 240, 720, 1440]
 
 socket = create_socket_string()
 client = Client(config.API_KEY, config.API_SECRET)
@@ -44,7 +44,7 @@ def document_whale(symbol, closing_price, amplitude, whale_factor):
     with open(f"coins/{symbol}/{current_time.strftime('%y-%m-%d %H-%M-%S')}.txt", 'w') as f:
         amplitude = round(amplitude * 100, 2)
         whale_factor = round(whale_factor, 2)
-        write(f"Writing first 2 lines for file {symbol}/{f.name}")
+        write(f"Writing first 2 lines for file {f.name}")
         f.write(f"{symbol}\tamplitude= +{amplitude}%\twhalefactor={whale_factor}\n")
         f.write(f"0m: {closing_price}\n")
 
@@ -73,9 +73,11 @@ def on_message(_, message):
         high_price = float(json_message['data']['k']['h'])
 
         # check if there are processes that need to be executed
-        processes_for_symbol = [x for x in documenting_processes if x.symbol == symbol and x.time_to_execute <= datetime.now()]
+        processes_for_symbol = [x for x in documenting_processes if x.symbol == symbol and x.time_to_execute <=
+                                datetime.now() + timedelta(seconds=10)]
         for process in processes_for_symbol:
-            write(f"Found a process to document! Corresponding to symbol={symbol} and filename={process.filename}")
+            write(f"Documenting change for symbol={symbol}, filename={process.filename}, "
+                  f"time interval={process.time_interval}", newLine=True)
             process.document_process(closing_price)
             documenting_processes.remove(process)
 
@@ -97,8 +99,11 @@ def on_message(_, message):
                 whale_factor = min(float(10), amplitude / price_change_ratio)
 
             if whale_factor >= MINIMUM_WHALE_FACTOR:
-                write(f"symbol={symbol} \tamplitude={amplitude}\tcandle={candle_color}\t{whale_factor}")
+                write(f"symbol={symbol} \tamplitude={amplitude}\tcandle={candle_color}\t{whale_factor}", newLine=True)
                 document_whale(symbol, closing_price, amplitude, whale_factor)
+            else:
+                write(f"symbol={symbol} \tamplitude={amplitude}\tcandle={candle_color}\t{whale_factor}\n"
+                      f"The whale factor was too low...", newLine=True)
     except Exception as e:
         abort("something went wrong in the main message function", e)
 

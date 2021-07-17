@@ -8,9 +8,11 @@ class DocumentingProcess:
         self.time_interval = time_interval
 
     def document_process(self, closing_price):
-        with open(f"coins/{self.symbol}/{self.filename}", 'a') as f:
+        with open(f"{self.filename}", 'r') as f:
             # finds the starting price at '0m: *price*' on line 2
             start_price = float(f.readlines()[1].split()[1].strip())
+
+        with open(f"{self.filename}", 'a') as f:
             price_change = (closing_price - start_price) / start_price
             price_change = round(price_change * 100, 2)
             f.write(f"{self.time_interval}m: {closing_price}\t{price_change}%\n")

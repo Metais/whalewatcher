@@ -20,5 +20,8 @@ def abort(message, exception):
     exit()
 
 
-def write(s):
-    print(f"{datetime.now().strftime('%y-%m-%d %H:%M:%S')} - {s}")
+def write(s, newLine=False):
+    if newLine:
+        print(f"\n{datetime.now().strftime('%y-%m-%d %H:%M:%S')} - {s}")
+    else:
+        print(f"{datetime.now().strftime('%y-%m-%d %H:%M:%S')} - {s}")
