@@ -42,7 +42,7 @@ def on_message(_, message):
             if price_change_ratio < 0.001:
                 whale_factor = 10
             else:
-                whale_factor = max(float(10), amplitude / price_change_ratio)
+                whale_factor = min(float(10), amplitude / price_change_ratio)
 
             write(f"symbol={json_message['data']['s']} \tamplitude={amplitude}\tcandle={candle_color}\t{whale_factor}")
     except Exception as e:
