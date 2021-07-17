@@ -9,6 +9,7 @@ from utils import write, create_socket_string, abort
 
 SOCKET = create_socket_string()
 WHALE_CUTOFF = 0.017  # % change in a minute candle that would describe a whale purchase/sell
+MINIMUM_WHALE_FACTOR = 3.5  # minimum accepted ratio between upper wick and price change to be considered whale purchase
 
 client = Client(config.API_KEY, config.API_SECRET)
 
@@ -42,9 +43,10 @@ def on_message(_, message):
             if price_change_ratio < 0.001:
                 whale_factor = 10
             else:
-                whale_factor = max(float(10), amplitude / price_change_ratio)
+                whale_factor = min(float(10), amplitude / price_change_ratio)
 
-            write(f"symbol={json_message['data']['s']} \tamplitude={amplitude}\tcandle={candle_color}\t{whale_factor}")
+            if whale_factor >= MINIMUM_WHALE_FACTOR:
+                write(f"symbol={json_message['data']['s']} \tamplitude={amplitude}\tcandle={candle_color}\t{whale_factor}")
     except Exception as e:
         write(e)
         exit()
