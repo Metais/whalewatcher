@@ -8,7 +8,7 @@ from binance.client import Client
 from utils import write, create_socket_string, abort
 
 SOCKET = create_socket_string()
-WHALE_CUTOFF = 0.01  # % change in a minute candle that would describe a whale purchase/sell
+WHALE_CUTOFF = 0.017  # % change in a minute candle that would describe a whale purchase/sell
 
 client = Client(config.API_KEY, config.API_SECRET)
 
@@ -38,8 +38,11 @@ def on_message(_, message):
             candle_color = "red" if price_change < 0 else "green" if price_change > 0 else "unchanged"
 
             # for determining chance that this was a whale (high number == high chance of whale)
-            price_change_ratio = abs(price_change) / float(json_message['data']['k']['o'])
-            whale_factor = amplitude / price_change_ratio
+            price_change_ratio = price_change / float(json_message['data']['k']['o'])
+            if price_change_ratio < 0.001:
+                whale_factor = 10
+            else:
+                whale_factor = max(float(10), amplitude / price_change_ratio)
 
             write(f"symbol={json_message['data']['s']} \tamplitude={amplitude}\tcandle={candle_color}\t{whale_factor}")
     except Exception as e:
