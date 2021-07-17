@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 def create_socket_string():
     coins = []
     with open("watchedcoins.txt", 'r') as f:
@@ -10,7 +11,13 @@ def create_socket_string():
     for coin in coins:
         coins_part += f"{coin}@kline_1m/"
 
-    return f"wss://stream.binance.com:9443/steam?streams={coins_part[:-1]}"
+    return f"wss://stream.binance.com:9443/stream?streams={coins_part[:-1]}"
+
+
+def abort(message, exception):
+    write(message)
+    write(exception)
+    exit()
 
 
 def write(s):
