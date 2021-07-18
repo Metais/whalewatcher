@@ -11,4 +11,4 @@ def recorddocumentation(symbol, time):
         access = 'a'
 
     with open(filename, access) as f:
-        f.write(f"{time.strftime('%y-%m-%d %H-%M-%S')} - {symbol}")
+        f.write(f"{time.strftime('%y-%m-%d %H-%M-%S')} - {symbol}\n")
