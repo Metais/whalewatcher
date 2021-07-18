@@ -2,7 +2,7 @@ A script that keeps track of coins that experience massive orders (purchases fro
 
 Symbols that are tracked are USDT markets of coins listed in watchedcoins.txt
 
-Feel free to alter parameters such as WHALE_CUTOFF (%amplitude of a 1m candle), MINIMUM_WHALE_FACTOR (ratio of upper wick to price change) and the price intervals.
+Feel free to alter parameters such as WHALE_CUTOFF (%amplitude of a 1m candle), MINIMUM_WHALE_FACTOR (ratio of upper wick to price change) and the time intervals.
 
 Installation manual:
 - Use Python 3.6
