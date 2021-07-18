@@ -1,1 +1,11 @@
-whalewatcher
+Installation manual:
+- Use Python 3.6
+- Use Miniconda
+- Create a virtual environment, as follows: conda create --name yourEnvName python=3.6 
+- Activate the virtual environment, as follows: conda activate yourEnvName
+- downloading the following packages in order:
+- - conda install -c conda-forge websocket-client
+- - conda install pip
+- - conda install twisted
+- - pip install python-binance
+- run with command 'python main.py' while in root project folder
