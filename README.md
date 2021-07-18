@@ -15,3 +15,10 @@ Installation manual:
 - - conda install twisted
 - - pip install python-binance
 - Run with command 'python main.py' while in root project folder
+
+Locally, you should also have a config.py file in the format:
+
+```python
+API_KEY = 'your binance api key'
+API_SECRET = 'your binance api secret'
+```
