@@ -1,0 +1,1 @@
+Creates a file for each day, within which each line describes a new entry in the coins folder

@@ -8,6 +8,7 @@ import documentingwhales
 
 from binance.client import Client
 from utils import write, create_socket_string, abort
+from recorddocumentation import recorddocumentation
 from datetime import datetime, timedelta
 
 # TODO Add an administrative file that logs when a new file is created
@@ -53,6 +54,8 @@ def document_whale(symbol, closing_price, amplitude, whale_factor):
 
     documenting_processes.extend(processes)
     write(f"Adding processes to the list of processes, now holding {len(documenting_processes)} processes...")
+
+    recorddocumentation(symbol, current_time)
 
 
 def on_message(_, message):
