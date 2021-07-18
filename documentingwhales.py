@@ -1,5 +1,3 @@
-
-
 class DocumentingProcess:
     def __init__(self, time_to_execute, symbol, filename, time_interval):
         self.time_to_execute = time_to_execute

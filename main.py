@@ -16,9 +16,6 @@ from datetime import datetime, timedelta
 WHALE_CUTOFF = 0.017  # % change in a minute candle that would describe a whale purchase/sell
 MINIMUM_WHALE_FACTOR = 3.5  # minimum accepted ratio between upper wick and price change to be considered whale purchase
 
-WHALE_CUTOFF = 0.01
-MINIMUM_WHALE_FACTOR = 1
-
 # after how many minutes to write price interval, ranges from 5 minutes after whale event to 1 day after whale event
 time_intervals = [1, 5, 10, 30, 60, 120, 240, 720, 1440]
 
