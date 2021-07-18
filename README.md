@@ -1,3 +1,9 @@
+A script that keeps track of coins that experience massive orders (purchases from crypto-whales, institutions, hedge-funds), and subsequently tracks what it does to the price in selected price-intervals. Its primary use is the tracking of prices of coins that are subject of large fluctuations.
+
+Symbols that are tracked are USDT markets of coins listed in watchedcoins.txt
+
+Feel free to alter parameters such as WHALE_CUTOFF (%amplitude of a 1m candle), MINIMUM_WHALE_FACTOR (ratio of upper wick to price change) and the price intervals.
+
 Installation manual:
 - Use Python 3.6
 - Use Miniconda
