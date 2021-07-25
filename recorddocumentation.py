@@ -1,7 +1,7 @@
 import os
 
 
-def recorddocumentation(symbol, time):
+def record_documentation(symbol, time):
     dateYMD = time.strftime('%y-%m-%d')
     filename = f'records/{dateYMD}.txt'
 

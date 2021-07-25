@@ -1,14 +1,13 @@
 import websocket
 import json
 import config
-import time
 import atexit
 import os
 import documentingwhales
 
 from binance.client import Client
 from utils import write, create_socket_string, abort
-from recorddocumentation import recorddocumentation
+from recorddocumentation import record_documentation
 from datetime import datetime, timedelta
 
 # TODO Add an administrative file that logs when a new file is created
@@ -32,19 +31,20 @@ def exit_handler():
 def document_whale(symbol, closing_price, amplitude, whale_factor):
     global documenting_processes  # necessary?
 
-    # check is directory for the symbol already exists or not
-    if not os.path.isdir(f'coins/{symbol}'):
-        write(f"Making a directory for symbol {symbol}")
-        os.mkdir(f'coins/{symbol}')
-
     current_time = datetime.now()
+    current_day = {current_time.strftime('%y-%m-%d')}
 
-    with open(f"coins/{symbol}/{current_time.strftime('%y-%m-%d %H-%M-%S')}.txt", 'w') as f:
-        amplitude = round(amplitude * 100, 2)
-        whale_factor = round(whale_factor, 2)
+    # check is directory for the symbol already exists or not
+    if not os.path.isdir(f"hits/{current_day}"):
+        write(f"Making a directory for date {current_day}")
+        os.mkdir(f"hits/{current_day}")
+
+    amplitude = round(amplitude * 100, 2)
+    whale_factor = round(whale_factor, 2)
+    with open(f"hits/{current_day}/{current_time.strftime('%y-%m-%d %H-%M-%S')}-{symbol}-{amplitude}-{whale_factor}.txt", 'w') as f:
         write(f"Writing first 2 lines for file {f.name}")
         f.write(f"{symbol}\tamplitude= +{amplitude}%\twhalefactor={whale_factor}\n")
-        f.write(f"0m: {closing_price}\n")
+        f.write(f"{current_time.strftime('%y-%m-%d %H-%M-%S')} 0m: {closing_price}\n")
 
         processes = []
         for time_interval in time_intervals:
@@ -55,7 +55,8 @@ def document_whale(symbol, closing_price, amplitude, whale_factor):
     documenting_processes.extend(processes)
     write(f"Adding processes to the list of processes, now holding {len(documenting_processes)} processes...")
 
-    recorddocumentation(symbol, current_time)
+    # Record documentation in separate folder/file
+    record_documentation(symbol, current_time)
 
 
 def on_message(_, message):

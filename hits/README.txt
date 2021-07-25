@@ -1,0 +1,1 @@
+Folder that keeps tracks of each day's whale hits
