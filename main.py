@@ -1,4 +1,5 @@
 import websocket
+import signal
 import json
 import config
 import time
@@ -8,20 +9,20 @@ import documentingwhales
 
 from binance.client import Client
 from utils import write, create_socket_string, abort
-from recorddocumentation import recorddocumentation
+#from recorddocumentation import recorddocumentation
 from datetime import datetime, timedelta
 
 # TODO Add an administrative file that logs when a new file is created
 # TODO Add a restriction on documenting whales if they're too close to each other
 
-WHALE_CUTOFF = 0.017  # % change in a minute candle that would describe a whale purchase/sell
+WHALE_CUTOFF = 0.011  # % change in a minute candle that would describe a whale purchase/sell
 MINIMUM_WHALE_FACTOR = 3.5  # minimum accepted ratio between upper wick and price change to be considered whale purchase
 
 # after how many minutes to write price interval, ranges from 5 minutes after whale event to 1 day after whale event
 time_intervals = [1, 5, 10, 30, 60, 120, 240, 720, 1440]
 
-socket = create_socket_string()
 client = Client(config.API_KEY, config.API_SECRET)
+socket = create_socket_string(client)
 documenting_processes = []
 
 
@@ -55,7 +56,7 @@ def document_whale(symbol, closing_price, amplitude, whale_factor):
     documenting_processes.extend(processes)
     write(f"Adding processes to the list of processes, now holding {len(documenting_processes)} processes...")
 
-    recorddocumentation(symbol, current_time)
+    #recorddocumentation(symbol, current_time)
 
 
 def on_message(_, message):
@@ -72,14 +73,15 @@ def on_message(_, message):
         closing_price = float(json_message['data']['k']['c'])
         high_price = float(json_message['data']['k']['h'])
 
+        # DONT NEED DOCUMENTING ANYMORE
         # check if there are processes that need to be executed
-        processes_for_symbol = [x for x in documenting_processes if x.symbol == symbol and x.time_to_execute <=
-                                datetime.now() + timedelta(seconds=10)]
-        for process in processes_for_symbol:
-            write(f"Documenting change for symbol={symbol}, filename={process.filename}, "
-                  f"time interval={process.time_interval}", newLine=True)
-            process.document_process(closing_price)
-            documenting_processes.remove(process)
+        #processes_for_symbol = [x for x in documenting_processes if x.symbol == symbol and x.time_to_execute <=
+        #                        datetime.now() + timedelta(seconds=10)]
+        #for process in processes_for_symbol:
+        #    """write(f"Documenting change for symbol={symbol}, filename={process.filename}, "
+        #          f"time interval={process.time_interval}", newLine=True)"""
+        #    process.document_process(closing_price)
+        #    documenting_processes.remove(process)
 
         # with this program, we're not interested in the 'lowest' price of a candle
         # amplitude is best measured as the ratio of highest price to opening price
@@ -87,23 +89,21 @@ def on_message(_, message):
         amplitude = (high_price - opening_price) / opening_price
 
         if amplitude > WHALE_CUTOFF:
-            # for determining candle color
             price_change = closing_price - opening_price
-            candle_color = "red" if price_change < 0 else "green" if price_change > 0 else "unchanged"
 
             # for determining chance that this was a whale (high number == high chance of whale)
             price_change_ratio = price_change / opening_price
             if price_change_ratio < 0.001:
-                whale_factor = 10
+                its_a_whale = True
             else:
-                whale_factor = min(float(10), amplitude / price_change_ratio)
+                its_a_whale = min(float(10), amplitude / price_change_ratio) >= MINIMUM_WHALE_FACTOR
 
-            if whale_factor >= MINIMUM_WHALE_FACTOR:
-                write(f"symbol={symbol} \tamplitude={amplitude}\tcandle={candle_color}\t{whale_factor}", newLine=True)
-                document_whale(symbol, closing_price, amplitude, whale_factor)
+            if its_a_whale:
+                write(f"symbol={symbol}\tChange={round(amplitude*100, 2)}%", newLine=True)
+                # document_whale(symbol, closing_price, amplitude, whale_factor)
             else:
-                write(f"symbol={symbol} \tamplitude={amplitude}\tcandle={candle_color}\t{whale_factor}\n"
-                      f"The whale factor was too low...", newLine=True)
+                """write(f"symbol={symbol} \tamplitude={amplitude}\tcandle={candle_color}\t{whale_factor}\n"
+                      f"The whale factor was too low...", newLine=True)"""
     except Exception as e:
         abort("something went wrong in the main message function", e)
 
@@ -116,9 +116,20 @@ def on_close(_):
     write('closed connection')
 
 
+def handler(signum, frame):
+    write(f"Closing program by Ctrl+c event")
+    exit()
+
+
+signal.signal(signal.SIGINT, handler)
 atexit.register(exit_handler)
+
+connection_retries = 1000
 try:
     ws = websocket.WebSocketApp(socket, on_open=on_open, on_message=on_message, on_close=on_close)
-    ws.run_forever()
+    while connection_retries > 0:
+        connection_retries -= 1
+        ws.run_forever()
+        time.sleep(1)  # if connection drops, give some time between retries
 except Exception as e:
     abort("Something went wrong with the websocket", e)
